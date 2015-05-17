@@ -4,3 +4,6 @@ Epson provides a driver for this printer, but they only provide x86 and x64 linu
 
 This is a very simple driver that provides buffered raster printing and paper cutting at end of page or end of job.
 
+To compile this on a raspberry pi, you will first need to install two cups dev packages:
+sudo apt-get install libcups2-dev
+sudo apt-get install libcupsimage2-dev
