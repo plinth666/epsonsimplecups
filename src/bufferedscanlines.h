@@ -38,6 +38,7 @@ typedef struct t_bufferscan {
 	int bytesPerRow;
 	int totalRows;
 	int currentRow;
+	int outputFlags;
 	FILE *fp;
 	unsigned char *rawData;
 } t_bufferscan;
@@ -49,11 +50,19 @@ typedef struct t_bufferscan {
  * little endian integers as binary data.
  */
 
+/*
+ * defines flags for setting double width/height
+ */
+enum {
+	kDoubleWide = 1,
+	kDoubleHigh = 2
+};
+
 /* constructs a new t_bufferscan with the given bytesperrow, the total number of rows,
  * and the output FILE. Returns NULL on failure. Internally, this will allocate memory
  * for the buffer.
  */
-extern t_bufferscan *bufferscan_new(int bytesperrow, int rows, FILE *fp);
+extern t_bufferscan *bufferscan_new(int bytesperrow, int rows, int outputFlags, FILE *fp);
 /* destructure the t_bufferscan and its contents. Does NOT close the output FILE */
 extern void bufferscan_dispose(t_bufferscan *bs);
 

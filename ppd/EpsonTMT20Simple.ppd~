@@ -180,7 +180,7 @@
 *PageType 1Fixed/Fixed Length: ""
 *CloseUI: *PageType
 
-*OpenUI *PixelDoublingType/Pixel Doubling: PickOne
+*OpenUI *PixelDoublingType/4. Pixel Doubling: PickOne
 *DefaultPixelDoublingType: 0NoDoubling
 *PixelDoublingType 0NoDoubling/None: ""
 *PixelDoublingType 1HorizontalDoubling/Double Width: ""

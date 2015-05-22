@@ -43,13 +43,14 @@ static void bufferscan_reset(t_bufferscan *bs)
  * Allocate and reset a new bufferscan object.
  * Returns NULL on failure.
  */
-t_bufferscan *bufferscan_new(int bytesperrow, int rows, FILE *fp)
+t_bufferscan *bufferscan_new(int bytesperrow, int rows, int outputFlags, FILE *fp)
 {
 	t_bufferscan *bs = (t_bufferscan *)malloc(sizeof(t_bufferscan));
 	if (!bs) return 0;
 
 	bs->bytesPerRow = bytesperrow;
 	bs->totalRows = rows;
+	bs->outputFlags = outputFlags;
 	bs->fp = fp;
 	bs->rawData = (unsigned char *)malloc(bytesperrow * rows);
 	if (!bs->rawData)
@@ -117,7 +118,10 @@ void bufferscan_flush(t_bufferscan *bs)
 	fputc(29, bs->fp); fputc('8', bs->fp); fputc('L', bs->fp);
 	writeLong(totalBytes + 10, bs->fp);
     fputc('0', bs->fp); fputc('p', bs->fp);
-	fputc('0', bs->fp); fputc(1, bs->fp); fputc(1, bs->fp); fputc('1', bs->fp);
+	fputc('0', bs->fp);
+	fputc(bs->outputFlags & kDoubleWide ? 2 : 1, bs->fp);
+	fputc(bs->outputFlags & kDoubleHigh ? 2 : 1, bs->fp);
+	fputc('1', bs->fp);
 	writeShort(bs->bytesPerRow * 8, bs->fp);
 	writeShort(bs->currentRow, bs->fp);
 

@@ -129,7 +129,7 @@ struct settings_
 
     int bytesPerScanLine;
     int bytesPerScanLineStd;
-
+	int doubleMode;
 };
 
 struct command
@@ -150,6 +150,7 @@ inline void debugPrintSettings(struct settings_ * settings)
   fprintf(stderr, "DEBUG: pageCutType = %d\n" , settings->pageCutType);
   fprintf(stderr, "DEBUG: docCutType = %d\n"  , settings->docCutType);
   fprintf(stderr, "DEBUG: bytesPerScanLine = %d\n", settings->bytesPerScanLine);
+  fprintf(stderr, "DEBUG: doubleMode = %d\n", settings->doubleMode);
 }
 
 inline void outputCommand(struct command output)
@@ -315,6 +316,7 @@ inline void initializeSettings(char * commandLineOptionSettings, struct settings
     settings->docCutType                     = getOptionChoiceIndex("DocCutType"                    , ppd);
 	settings->bytesPerScanLine    = 80;
 	settings->bytesPerScanLineStd = 80;
+	settings->doubleMode = getOptionChoiceIndex("PixelDoublingType", ppd);
 
     getPageWidthPageHeight(ppd, settings);
 
@@ -499,7 +501,7 @@ int main(int argc, char *argv[])
 		bytesPerScanline = settings.bytesPerScanLine < header.cupsBytesPerLine ?
 				settings.bytesPerScanLine : header.cupsBytesPerLine;
 
-		bs = bufferscan_new(bytesPerScanline, 256, stdout);
+		bs = bufferscan_new(bytesPerScanline, 256, settings.doubleMode, stdout);
 		if (!bs)
 		{
 			CLEANUP;
