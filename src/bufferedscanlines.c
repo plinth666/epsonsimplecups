@@ -49,6 +49,7 @@ t_bufferscan *bufferscan_new(int bytesperrow, int rows, int outputFlags, FILE *f
 	if (!bs) return 0;
 
 	bs->bytesPerRow = bytesperrow;
+	bs->currentRow = 0;
 	bs->totalRows = rows;
 	bs->outputFlags = outputFlags;
 	bs->fp = fp;
