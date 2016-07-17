@@ -203,6 +203,14 @@
 *CloseUI: *DocCutType
 *CloseGroup: CutGroup
 
+*OpenGroup CashDrawerGroup/Cash Drawer Options
+*OpenUI *CashDrawerType/1. Cash Drawer Options: PickOne
+*DefaultCashDrawerType: 0DoNothing
+*CashDrawerType 0DoNothing/Do Nothing: ""
+*CashDrawerType 1OpenDrawer/Open After Document: ""
+*CloseUI: *CashDrawerType
+*CloseGroup: CashDrawerGroup
+
 
 *OpenGroup: DoublingGroup/Pixel Doubling
 *CloseGroup: DoublingGroup

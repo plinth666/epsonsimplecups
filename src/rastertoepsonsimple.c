@@ -129,7 +129,8 @@ struct settings_
 
     int bytesPerScanLine;
     int bytesPerScanLineStd;
-	int doubleMode;
+    int doubleMode;
+    int drawerKick;
 };
 
 struct command
@@ -143,6 +144,9 @@ static const struct command printerInitializeCommand =
 
 static const struct command pageCutCommand =
 {4, (char[4]){29,'V','A',20}};
+
+static const struct command drawerKickCommand =
+{5, (char[5]){27,112,48,55,121}};
 
 
 inline void debugPrintSettings(struct settings_ * settings)
@@ -317,6 +321,7 @@ inline void initializeSettings(char * commandLineOptionSettings, struct settings
 	settings->bytesPerScanLine    = 80;
 	settings->bytesPerScanLineStd = 80;
 	settings->doubleMode = getOptionChoiceIndex("PixelDoublingType", ppd);
+	settings->drawerKick = getOptionChoiceIndex("CashDrawerType", ppd);
 
     getPageWidthPageHeight(ppd, settings);
 
@@ -347,6 +352,10 @@ void endJob(struct settings_ settings)
 	if (settings.docCutType)
 	{
 		outputCommand(pageCutCommand);
+    }
+    if (settings.drawerKick)
+    {
+	outputCommand(drawerKickCommand);
     }
 }
 
