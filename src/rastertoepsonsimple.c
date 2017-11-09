@@ -118,9 +118,7 @@ static cupsMarkOptions_fndef cupsMarkOptions_fn;
 #define FALSE 0
 #define TRUE  (!FALSE)
 
-
-struct settings_
-{
+struct settings_ {
     float pageWidth;
     float pageHeight;
 
@@ -133,57 +131,49 @@ struct settings_
     int drawerKick;
 };
 
-struct command
-{
-    int    length;
+struct command {
+    int length;
     char* command;
 };
 
-static const struct command printerInitializeCommand =
-{2,(char[2]){0x1b,'@'}};
+static const struct command printerInitializeCommand ={2, (char[2])
+    {0x1b, '@'}};
 
-static const struct command pageCutCommand =
-{4, (char[4]){29,'V','A',20}};
+static const struct command pageCutCommand ={4, (char[4])
+    {29, 'V', 'A', 20}};
 
-static const struct command drawerKickCommand =
-{5, (char[5]){27,112,48,55,121}};
+static const struct command drawerKickCommand ={5, (char[5])
+    {27, 112, 48, 55, 121}};
 
-
-inline void debugPrintSettings(struct settings_ * settings)
-{
-  fprintf(stderr, "DEBUG: pageCutType = %d\n" , settings->pageCutType);
-  fprintf(stderr, "DEBUG: docCutType = %d\n"  , settings->docCutType);
-  fprintf(stderr, "DEBUG: bytesPerScanLine = %d\n", settings->bytesPerScanLine);
-  fprintf(stderr, "DEBUG: doubleMode = %d\n", settings->doubleMode);
+inline void debugPrintSettings(struct settings_ * settings) {
+    fprintf(stderr, "DEBUG: pageCutType = %d\n", settings->pageCutType);
+    fprintf(stderr, "DEBUG: docCutType = %d\n", settings->docCutType);
+    fprintf(stderr, "DEBUG: bytesPerScanLine = %d\n", settings->bytesPerScanLine);
+    fprintf(stderr, "DEBUG: doubleMode = %d\n", settings->doubleMode);
 }
 
-inline void outputCommand(struct command output)
-{
+inline void outputCommand(struct command output) {
     int i = 0;
 
-    for (; i < output.length; i++)
-    {
+    for (; i < output.length; i++) {
         putchar(output.command[i]);
     }
 }
 
-inline int getOptionChoiceIndex(const char * choiceName, ppd_file_t * ppd)
-{
+inline int getOptionChoiceIndex(const char * choiceName, ppd_file_t * ppd) {
     ppd_choice_t * choice;
     ppd_option_t * option;
 
     choice = PPDFINDMARKEDCHOICE(ppd, choiceName);
-    if (choice == NULL)
-    {
-        if ((option = PPDFINDOPTION(ppd, choiceName))          == NULL) return -1;
-        if ((choice = PPDFINDCHOICE(option,option->defchoice)) == NULL) return -1;
+    if (choice == NULL) {
+        if ((option = PPDFINDOPTION(ppd, choiceName)) == NULL) return -1;
+        if ((choice = PPDFINDCHOICE(option, option->defchoice)) == NULL) return -1;
     }
 
     return atoi(choice->choice);
 }
 
-inline void getPageWidthPageHeight(ppd_file_t * ppd, struct settings_ * settings)
-{
+inline void getPageWidthPageHeight(ppd_file_t * ppd, struct settings_ * settings) {
     ppd_choice_t * choice;
     ppd_option_t * option;
 
@@ -199,82 +189,62 @@ inline void getPageWidthPageHeight(ppd_file_t * ppd, struct settings_ * settings
     int state;
 
     choice = PPDFINDMARKEDCHOICE(ppd, "PageSize");
-    if (choice == NULL)
-    {
+    if (choice == NULL) {
         option = PPDFINDOPTION(ppd, "PageSize");
-        choice = PPDFINDCHOICE(option,option->defchoice);
+        choice = PPDFINDCHOICE(option, option->defchoice);
     }
 
     widthIdx = 0;
-    memset(width, 0x00, sizeof(width));
+    memset(width, 0x00, sizeof (width));
 
     heightIdx = 0;
-    memset(height, 0x00, sizeof(height));
+    memset(height, 0x00, sizeof (height));
 
     pageSize = choice->choice;
     idx = 0;
 
     state = 0; // 0 = init, 1 = width, 2 = height, 3 = complete, 4 = fail
 
-    while (pageSize[idx] != 0x00)
-    {
-        if (state == 0)
-        {
-            if (pageSize[idx] == 'X')
-            {
+    while (pageSize[idx] != 0x00) {
+        if (state == 0) {
+            if (pageSize[idx] == 'X') {
                 state = 1;
 
                 idx++;
                 continue;
             }
-        }
-        else if (state == 1)
-        {
-            if ((pageSize[idx] >= '0') && (pageSize[idx] <= '9'))
-            {
+        } else if (state == 1) {
+            if ((pageSize[idx] >= '0') && (pageSize[idx] <= '9')) {
                 width[widthIdx++] = pageSize[idx];
 
                 idx++;
                 continue;
-            }
-            else if (pageSize[idx] == 'D')
-            {
+            } else if (pageSize[idx] == 'D') {
                 width[widthIdx++] = '.';
 
                 idx++;
                 continue;
-            }
-            else if (pageSize[idx] == 'M')
-            {
+            } else if (pageSize[idx] == 'M') {
                 idx++;
                 continue;
-            }
-            else if (pageSize[idx] == 'Y')
-            {
+            } else if (pageSize[idx] == 'Y') {
                 state = 2;
 
                 idx++;
                 continue;
             }
-        }
-        else if (state == 2)
-        {
-            if ((pageSize[idx] >= '0') && (pageSize[idx] <= '9'))
-            {
+        } else if (state == 2) {
+            if ((pageSize[idx] >= '0') && (pageSize[idx] <= '9')) {
                 height[heightIdx++] = pageSize[idx];
 
                 idx++;
                 continue;
-            }
-            else if (pageSize[idx] == 'D')
-            {
+            } else if (pageSize[idx] == 'D') {
                 height[heightIdx++] = '.';
 
                 idx++;
                 continue;
-            }
-            else if (pageSize[idx] == 'M')
-            {
+            } else if (pageSize[idx] == 'M') {
                 state = 3;
                 break;
             }
@@ -284,44 +254,39 @@ inline void getPageWidthPageHeight(ppd_file_t * ppd, struct settings_ * settings
         break;
     }
 
-    if (state == 3)
-    {
+    if (state == 3) {
         settings->pageWidth = atof(width);
         settings->pageHeight = atof(height);
-    }
-    else
-    {
+    } else {
         settings->pageWidth = 0;
         settings->pageHeight = 0;
     }
 }
 
-inline void initializeSettings(char * commandLineOptionSettings, struct settings_ * settings)
-{
-    ppd_file_t *    ppd         = NULL;
-    cups_option_t * options     = NULL;
-	int numOptions;
+inline void initializeSettings(char * commandLineOptionSettings, struct settings_ * settings) {
+    ppd_file_t * ppd = NULL;
+    cups_option_t * options = NULL;
+    int numOptions;
 
     ppd = PPDOPENFILE(getenv("PPD"));
 
     PPDMARKDEFAULTS(ppd);
 
     numOptions = CUPSPARSEOPTIONS(commandLineOptionSettings, 0, &options);
-    if ((numOptions != 0) && (options != NULL))
-    {
+    if ((numOptions != 0) && (options != NULL)) {
         CUPSMARKOPTIONS(ppd, numOptions, options);
 
         CUPSFREEOPTIONS(numOptions, options);
     }
 
-    memset(settings, 0x00, sizeof(struct settings_));
+    memset(settings, 0x00, sizeof (struct settings_));
 
-    settings->pageCutType                    = getOptionChoiceIndex("PageCutType"                   , ppd);
-    settings->docCutType                     = getOptionChoiceIndex("DocCutType"                    , ppd);
-	settings->bytesPerScanLine    = 80;
-	settings->bytesPerScanLineStd = 80;
-	settings->doubleMode = getOptionChoiceIndex("PixelDoublingType", ppd);
-	settings->drawerKick = getOptionChoiceIndex("CashDrawerType", ppd);
+    settings->pageCutType = getOptionChoiceIndex("PageCutType", ppd);
+    settings->docCutType = getOptionChoiceIndex("DocCutType", ppd);
+    settings->bytesPerScanLine = 80;
+    settings->bytesPerScanLineStd = 80;
+    settings->doubleMode = getOptionChoiceIndex("PixelDoublingType", ppd);
+    settings->drawerKick = getOptionChoiceIndex("CashDrawerType", ppd);
 
     getPageWidthPageHeight(ppd, settings);
 
@@ -330,32 +295,25 @@ inline void initializeSettings(char * commandLineOptionSettings, struct settings
     debugPrintSettings(settings);
 }
 
-void jobSetup(struct settings_ settings)
-{
+void jobSetup(struct settings_ settings) {
     outputCommand(printerInitializeCommand);
 }
 
-void pageSetup(struct settings_ settings, cups_page_header_t header)
-{
+void pageSetup(struct settings_ settings, cups_page_header_t header) {
 }
 
-void endPage(struct settings_ settings)
-{
-	if (settings.pageCutType)
-	{
-		outputCommand(pageCutCommand);
+void endPage(struct settings_ settings) {
+    if (settings.pageCutType) {
+        outputCommand(pageCutCommand);
     }
 }
 
-void endJob(struct settings_ settings)
-{
-	if (settings.docCutType)
-	{
-		outputCommand(pageCutCommand);
+void endJob(struct settings_ settings) {
+    if (settings.docCutType) {
+        outputCommand(pageCutCommand);
     }
-    if (settings.drawerKick)
-    {
-	outputCommand(drawerKickCommand);
+    if (settings.drawerKick) {
+        outputCommand(drawerKickCommand);
     }
 }
 
@@ -374,7 +332,7 @@ void endJob(struct settings_ settings)
 #ifdef RPMBUILD
 #define CLEANUP                                                         \
 {                                                                       \
-    if (rasterData   != NULL) free(rasterData);   \
+    if (rasterData   != NULL) free(rasterData);                         \
     CUPSRASTERCLOSE(ras);                                               \
     if (fd != 0)                                                        \
     {                                                                   \
@@ -386,7 +344,7 @@ void endJob(struct settings_ settings)
 #else
 #define CLEANUP                                                         \
 {                                                                       \
-    if (rasterData   != NULL) free(rasterData);   \
+    if (rasterData   != NULL) free(rasterData);                         \
     CUPSRASTERCLOSE(ras);                                               \
     if (fd != 0)                                                        \
     {                                                                   \
@@ -395,109 +353,95 @@ void endJob(struct settings_ settings)
 }
 #endif
 
+int main(int argc, char *argv[]) {
+    int fd = 0; /* File descriptor providing CUPS raster data  */
+    cups_raster_t * ras = NULL; /* Raster stream for printing  */
+    cups_page_header2_t header; /* CUPS Page header */
+    int page = 0; /* Current page */
 
-int main(int argc, char *argv[])
-{
-    int                 fd                      = 0;        /* File descriptor providing CUPS raster data                                           */
-    cups_raster_t *     ras                     = NULL;     /* Raster stream for printing                                                           */
-    cups_page_header2_t  header;                             /* CUPS Page header                                                                     */
-    int                 page                    = 0;        /* Current page                                                                         */
+    int y = 0; /* Vertical position in page 0 <= y <= header.cupsHeight */
 
-    int                 y                       = 0;        /* Vertical position in page 0 <= y <= header.cupsHeight                                */
+    unsigned char * rasterData = NULL; /* Pointer to raster data buffer */
+    struct settings_ settings; /* Configuration settings */
 
-    unsigned char *     rasterData              = NULL;     /* Pointer to raster data buffer                                                        */
-    struct settings_    settings;                           /* Configuration settings                                                               */
-
-	int bytesPerScanline = 0;
+    int bytesPerScanline = 0;
 
 #ifdef RPMBUILD
-    void * libCupsImage = NULL;                             /* Pointer to libCupsImage library                                                      */
-    void * libCups      = NULL;                             /* Pointer to libCups library                                                           */
+    void * libCupsImage = NULL; /* Pointer to libCupsImage library */
+    void * libCups = NULL; /* Pointer to libCups library */
 
 
-    libCups = dlopen ("libcups.so", RTLD_NOW | RTLD_GLOBAL);
-    if (! libCups)
-    {
+    libCups = dlopen("libcups.so", RTLD_NOW | RTLD_GLOBAL);
+    if (!libCups) {
         fputs("ERROR: libcups.so load failure\n", stderr);
         return EXIT_FAILURE;
     }
 
-    libCupsImage = dlopen ("libcupsimage.so", RTLD_NOW | RTLD_GLOBAL);
-    if (! libCupsImage)
-    {
+    libCupsImage = dlopen("libcupsimage.so", RTLD_NOW | RTLD_GLOBAL);
+    if (!libCupsImage) {
         fputs("ERROR: libcupsimage.so load failure\n", stderr);
         dlclose(libCups);
         return EXIT_FAILURE;
     }
 
-    GET_LIB_FN_OR_EXIT_FAILURE(ppdClose_fn,             libCups,      "ppdClose"             );
-    GET_LIB_FN_OR_EXIT_FAILURE(ppdFindChoice_fn,        libCups,      "ppdFindChoice"        );
-    GET_LIB_FN_OR_EXIT_FAILURE(ppdFindMarkedChoice_fn,  libCups,      "ppdFindMarkedChoice"  );
-    GET_LIB_FN_OR_EXIT_FAILURE(ppdFindOption_fn,        libCups,      "ppdFindOption"        );
-    GET_LIB_FN_OR_EXIT_FAILURE(ppdMarkDefaults_fn,      libCups,      "ppdMarkDefaults"      );
-    GET_LIB_FN_OR_EXIT_FAILURE(ppdOpenFile_fn,          libCups,      "ppdOpenFile"          );
-    GET_LIB_FN_OR_EXIT_FAILURE(cupsFreeOptions_fn,      libCups,      "cupsFreeOptions"      );
-    GET_LIB_FN_OR_EXIT_FAILURE(cupsParseOptions_fn,     libCups,      "cupsParseOptions"     );
-    GET_LIB_FN_OR_EXIT_FAILURE(cupsMarkOptions_fn,      libCups,      "cupsMarkOptions"      );
-    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterOpen_fn,       libCupsImage, "cupsRasterOpen"       );
-    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterReadHeade2r_fn, libCupsImage, "cupsRasterReadHeader2" );
-    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterReadPixels_fn, libCupsImage, "cupsRasterReadPixels" );
-    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterClose_fn,      libCupsImage, "cupsRasterClose"      );
+    GET_LIB_FN_OR_EXIT_FAILURE(ppdClose_fn, libCups, "ppdClose");
+    GET_LIB_FN_OR_EXIT_FAILURE(ppdFindChoice_fn, libCups, "ppdFindChoice");
+    GET_LIB_FN_OR_EXIT_FAILURE(ppdFindMarkedChoice_fn, libCups, "ppdFindMarkedChoice");
+    GET_LIB_FN_OR_EXIT_FAILURE(ppdFindOption_fn, libCups, "ppdFindOption");
+    GET_LIB_FN_OR_EXIT_FAILURE(ppdMarkDefaults_fn, libCups, "ppdMarkDefaults");
+    GET_LIB_FN_OR_EXIT_FAILURE(ppdOpenFile_fn, libCups, "ppdOpenFile");
+    GET_LIB_FN_OR_EXIT_FAILURE(cupsFreeOptions_fn, libCups, "cupsFreeOptions");
+    GET_LIB_FN_OR_EXIT_FAILURE(cupsParseOptions_fn, libCups, "cupsParseOptions");
+    GET_LIB_FN_OR_EXIT_FAILURE(cupsMarkOptions_fn, libCups, "cupsMarkOptions");
+    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterOpen_fn, libCupsImage, "cupsRasterOpen");
+    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterReadHeade2r_fn, libCupsImage, "cupsRasterReadHeader2");
+    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterReadPixels_fn, libCupsImage, "cupsRasterReadPixels");
+    GET_LIB_FN_OR_EXIT_FAILURE(cupsRasterClose_fn, libCupsImage, "cupsRasterClose");
 #endif
 
-    if (argc < 6 || argc > 7)
-    {
+    if (argc < 6 || argc > 7) {
         fputs("ERROR: rastertoepsonsimple job-id user title copies options [file]\n", stderr);
 
-        #ifdef RPMBUILD
-            dlclose(libCupsImage);
-            dlclose(libCups);
-        #endif
+#ifdef RPMBUILD
+        dlclose(libCupsImage);
+        dlclose(libCups);
+#endif
 
         return EXIT_FAILURE;
     }
 
-    if (argc == 7)
-    {
-        if ((fd = open(argv[6], O_RDONLY)) == -1)
-        {
+    if (argc == 7) {
+        if ((fd = open(argv[6], O_RDONLY)) == -1) {
             perror("ERROR: Unable to open raster file - ");
             sleep(1);
 
-            #ifdef RPMBUILD
-                dlclose(libCupsImage);
-                dlclose(libCups);
-            #endif
+#ifdef RPMBUILD
+            dlclose(libCupsImage);
+            dlclose(libCups);
+#endif
 
             return EXIT_FAILURE;
         }
-    }
-    else
-    {
+    } else {
         fd = 0;
     }
 
     initializeSettings(argv[5], &settings);
 
-	jobSetup(settings);
+    jobSetup(settings);
     ras = CUPSRASTEROPEN(fd, CUPS_RASTER_READ);
 
     page = 0;
 
-    while (CUPSRASTERREADHEADER2(ras, &header))
-
-    {
-		t_bufferscan *bs = NULL;
-        if ((header.cupsHeight == 0) || (header.cupsBytesPerLine == 0))
-        {
+    while (CUPSRASTERREADHEADER2(ras, &header)) {
+        t_bufferscan *bs = NULL;
+        if ((header.cupsHeight == 0) || (header.cupsBytesPerLine == 0)) {
             break;
         }
 
-        if (rasterData == NULL)
-        {
+        if (rasterData == NULL) {
             rasterData = malloc(header.cupsBytesPerLine);
-            if (rasterData == NULL)
-            {
+            if (rasterData == NULL) {
                 CLEANUP;
                 return EXIT_FAILURE;
 
@@ -507,31 +451,28 @@ int main(int argc, char *argv[])
         page++;
         fprintf(stderr, "PAGE: %d %d\n", page, header.NumCopies);
 
-		bytesPerScanline = settings.bytesPerScanLine < header.cupsBytesPerLine ?
-				settings.bytesPerScanLine : header.cupsBytesPerLine;
+        bytesPerScanline = settings.bytesPerScanLine < header.cupsBytesPerLine ?
+                settings.bytesPerScanLine : header.cupsBytesPerLine;
 
-		bs = bufferscan_new(bytesPerScanline, 256, settings.doubleMode, stdout);
-		if (!bs)
-		{
-			CLEANUP;
-			return EXIT_FAILURE;
-		}
+        bs = bufferscan_new(bytesPerScanline, 256, settings.doubleMode, stdout);
+        if (!bs) {
+            CLEANUP;
+            return EXIT_FAILURE;
+        }
 
-        for (y = 0; y < header.cupsHeight; y ++)
-        {
-			memset(rasterData, 0, bytesPerScanline);
+        for (y = 0; y < header.cupsHeight; y++) {
+            memset(rasterData, 0, bytesPerScanline);
 
-            if (CUPSRASTERREADPIXELS(ras, rasterData, header.cupsBytesPerLine) < 1)
-            {
+            if (CUPSRASTERREADPIXELS(ras, rasterData, header.cupsBytesPerLine) < 1) {
                 break;
             }
 
-			bufferscan_addline(bs, rasterData);
+            bufferscan_addline(bs, rasterData);
         }
 
-		bufferscan_flush(bs);
-		bufferscan_dispose(bs);
-		bs = NULL;
+        bufferscan_flush(bs);
+        bufferscan_dispose(bs);
+        bs = NULL;
 
         endPage(settings);
     }
@@ -540,15 +481,11 @@ int main(int argc, char *argv[])
 
     CLEANUP;
 
-    if (page == 0)
-    {
+    if (page == 0) {
         fputs("ERROR: No pages found!\n", stderr);
-    }
-    else
-    {
+    } else {
         fputs("INFO: Ready to print.\n", stderr);
     }
 
-    return (page == 0)?EXIT_FAILURE:EXIT_SUCCESS;
+    return (page == 0) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
-
