@@ -125,6 +125,8 @@ struct settings_ {
     int pageCutType;
     int docCutType;
 
+    int marginReductionType;
+
     int bytesPerScanLine;
     int bytesPerScanLineStd;
     int doubleMode;
@@ -135,6 +137,19 @@ struct command {
     int length;
     char* command;
 };
+
+/**
+ * Flags for top/bottom margin reduction.
+ *
+ * Corresponds to values of configuration option MarginReductionType in PPD.
+ */
+enum {
+    noMarginReduction = 0,
+    topMarginReduction = 1,
+    bottomMarginReduction = 2,
+    bothMarginReduction = 3
+};
+
 
 static const struct command printerInitializeCommand ={2, (char[2])
     {0x1b, '@'}};
@@ -148,6 +163,7 @@ static const struct command drawerKickCommand ={5, (char[5])
 inline void debugPrintSettings(struct settings_ * settings) {
     fprintf(stderr, "DEBUG: pageCutType = %d\n", settings->pageCutType);
     fprintf(stderr, "DEBUG: docCutType = %d\n", settings->docCutType);
+    fprintf(stderr, "DEBUG: marginReductionType = %d\n", settings->marginReductionType);
     fprintf(stderr, "DEBUG: bytesPerScanLine = %d\n", settings->bytesPerScanLine);
     fprintf(stderr, "DEBUG: doubleMode = %d\n", settings->doubleMode);
 }
@@ -283,6 +299,7 @@ inline void initializeSettings(char * commandLineOptionSettings, struct settings
 
     settings->pageCutType = getOptionChoiceIndex("PageCutType", ppd);
     settings->docCutType = getOptionChoiceIndex("DocCutType", ppd);
+    settings->marginReductionType = getOptionChoiceIndex("MarginReductionType", ppd);
     settings->bytesPerScanLine = 80;
     settings->bytesPerScanLineStd = 80;
     settings->doubleMode = getOptionChoiceIndex("PixelDoublingType", ppd);
@@ -333,6 +350,7 @@ void endJob(struct settings_ settings) {
 #define CLEANUP                                                         \
 {                                                                       \
     if (rasterData   != NULL) free(rasterData);                         \
+    if (emptyLinePattern != NULL) free(emptyLinePattern);               \
     CUPSRASTERCLOSE(ras);                                               \
     if (fd != 0)                                                        \
     {                                                                   \
@@ -345,6 +363,7 @@ void endJob(struct settings_ settings) {
 #define CLEANUP                                                         \
 {                                                                       \
     if (rasterData   != NULL) free(rasterData);                         \
+    if (emptyLinePattern != NULL) free(emptyLinePattern);               \
     CUPSRASTERCLOSE(ras);                                               \
     if (fd != 0)                                                        \
     {                                                                   \
@@ -362,6 +381,7 @@ int main(int argc, char *argv[]) {
     int y = 0; /* Vertical position in page 0 <= y <= header.cupsHeight */
 
     unsigned char * rasterData = NULL; /* Pointer to raster data buffer */
+    unsigned char * emptyLinePattern = NULL;
     struct settings_ settings; /* Configuration settings */
 
     int bytesPerScanline = 0;
@@ -435,6 +455,9 @@ int main(int argc, char *argv[]) {
 
     while (CUPSRASTERREADHEADER2(ras, &header)) {
         t_bufferscan *bs = NULL;
+        int emptyLinesDiscardedCount = 0;
+        int insideTopMargin = TRUE;
+
         if ((header.cupsHeight == 0) || (header.cupsBytesPerLine == 0)) {
             break;
         }
@@ -460,11 +483,36 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
 
+        emptyLinePattern = realloc(emptyLinePattern, header.cupsBytesPerLine);
+        memset(emptyLinePattern, 0, header.cupsBytesPerLine);
+
         for (y = 0; y < header.cupsHeight; y++) {
+            unsigned bytes;
+
             memset(rasterData, 0, bytesPerScanline);
 
-            if (CUPSRASTERREADPIXELS(ras, rasterData, header.cupsBytesPerLine) < 1) {
+            if ((bytes = CUPSRASTERREADPIXELS(ras, rasterData, header.cupsBytesPerLine)) < 1) {
                 break;
+            }
+
+            if (memcmp(rasterData, emptyLinePattern, bytes) == 0) {
+                if (insideTopMargin) {
+                    if (settings.marginReductionType & topMarginReduction) {
+                        continue;
+                    }
+                } else {
+                    if (settings.marginReductionType & bothMarginReduction) {
+                        ++emptyLinesDiscardedCount;
+                        continue;
+                    }
+                }
+            }
+            insideTopMargin = FALSE;
+
+            if (emptyLinesDiscardedCount > 0) {
+                while (emptyLinesDiscardedCount--) {
+                    bufferscan_addline(bs, emptyLinePattern);
+                }
             }
 
             bufferscan_addline(bs, rasterData);

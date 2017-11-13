@@ -180,6 +180,14 @@
 *PageType 1Fixed/Fixed Length: ""
 *CloseUI: *PageType
 
+*OpenUI *MarginReductionType/Margin Reduction: PickOne
+*DefaultMarginReductionType: 3BothMarginsReduction
+*MarginReductionType 0NoMarginReduction/None: ""
+*MarginReductionType 1TopMarginReduction/Top margin: ""
+*MarginReductionType 2BottomMarginReduction/Bottom margin: ""
+*MarginReductionType 3BothMarginsReduction/Top & Bottom margins: ""
+*CloseUI *MarginReductionType
+
 *OpenUI *PixelDoublingType/Pixel Doubling: PickOne
 *DefaultPixelDoublingType: 0NoDoubling
 *PixelDoublingType 0NoDoubling/None: ""
