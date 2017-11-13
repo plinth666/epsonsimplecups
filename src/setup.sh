@@ -80,7 +80,7 @@ echo ""
 
 echo "Copying model ppd files to $DESTDIR/$PPDDIR"
 mkdir -p $DESTDIR/$PPDDIR
-cp *.gz $DESTDIR/$PPDDIR
+cp *.ppd $DESTDIR/$PPDDIR
 echo ""
 
 if [ -z $RPMBUILD ]

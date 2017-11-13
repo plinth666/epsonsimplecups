@@ -1,7 +1,5 @@
 VPATH = src:ppd:bin
 
-ppds = EpsonTMT20Simple.ppd.gz
-
 DEFS=
 LIBS=-lcupsimage -lcups
 
@@ -23,12 +21,12 @@ define sweep
 @if [ -e install ]; then echo "rm -f install/*"; rm -f install/*; rmdir install; fi
 endef
 
-install/setup: rastertoepsonsimple $(ppds) setup
+install/setup: rastertoepsonsimple setup
 	# packaging
 	@if [ -e install ]; then rm -f install/*; rmdir install; fi
 	mkdir install
 	cp bin/rastertoepsonsimple install
-	cp bin/*.ppd.gz install
+	cp ppd/*.ppd install
 	cp bin/setup install
 
 .PHONY: install
@@ -66,10 +64,6 @@ rastertoepsonsimple: rastertoepsonsimple.c bufferedscanlines.o
 	# compiling rastertoepsonsimple filter
 	gcc -Wl,-rpath,/usr/lib -Wall -fPIC -O2 $(DEFS) -o bin/rastertoepsonsimple bufferedscanlines.o src/rastertoepsonsimple.c $(LIBS)
 
-
-$(ppds): %.ppd.gz: %.ppd
-	# gzip ppd file
-	gzip -c $< >> bin/$@
 
 setup: setup.sh
 	$(dependencies)
