@@ -35,12 +35,12 @@
  * abstraction takes away from the readability.
  */
 typedef struct t_bufferscan {
-	int bytesPerRow;
-	int totalRows;
-	int currentRow;
-	int outputFlags;
-	FILE *fp;
-	unsigned char *rawData;
+    int bytesPerRow;
+    int totalRows;
+    int currentRow;
+    int outputFlags;
+    FILE *fp;
+    unsigned char *rawData;
 } t_bufferscan;
 
 /*
@@ -54,8 +54,8 @@ typedef struct t_bufferscan {
  * defines flags for setting double width/height
  */
 enum {
-	kDoubleWide = 1,
-	kDoubleHigh = 2
+    kDoubleWide = 1,
+    kDoubleHigh = 2
 };
 
 /* constructs a new t_bufferscan with the given bytesperrow, the total number of rows,
