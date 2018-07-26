@@ -208,6 +208,7 @@
 *DefaultCashDrawerType: 0DoNothing
 *CashDrawerType 0DoNothing/Do Nothing: ""
 *CashDrawerType 1OpenDrawer/Open After Document: ""
+*CashDrawerType 2OpenDrawerBefore/Open Before Document: ""
 *CloseUI: *CashDrawerType
 *CloseGroup: CashDrawerGroup
 

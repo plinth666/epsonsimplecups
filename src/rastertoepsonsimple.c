@@ -333,6 +333,9 @@ inline void initializeSettings(char * commandLineOptionSettings, struct settings
 void jobSetup(struct settings_ settings)
 {
     outputCommand(printerInitializeCommand);
+    if (settings.drawerKick == 2){
+	outputCommand(drawerKickCommand);
+    }
 }
 
 void pageSetup(struct settings_ settings, cups_page_header_t header)
@@ -353,7 +356,7 @@ void endJob(struct settings_ settings)
 	{
 		outputCommand(pageCutCommand);
     }
-    if (settings.drawerKick)
+    if (settings.drawerKick == 1)
     {
 	outputCommand(drawerKickCommand);
     }
