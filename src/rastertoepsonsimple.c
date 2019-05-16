@@ -296,7 +296,7 @@ inline void getPageWidthPageHeight(ppd_file_t * ppd, struct settings_ * settings
     }
 }
 
-inline void initializeSettings(char * commandLineOptionSettings, struct settings_ * settings)
+void initializeSettings(char * commandLineOptionSettings, struct settings_ * settings)
 {
     ppd_file_t *    ppd         = NULL;
     cups_option_t * options     = NULL;
